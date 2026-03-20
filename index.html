@@ -19,8 +19,6 @@
       --free: linear-gradient(135deg, #22c55e, #16a34a);
       --shadow: 0 18px 40px rgba(0,0,0,0.28);
       --radius: 22px;
-      --chip: rgba(255,255,255,0.14);
-      --chip-border: rgba(255,255,255,0.18);
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -39,7 +37,7 @@
     .app {
       min-height: 100dvh;
       display: grid;
-      grid-template-rows: auto auto 1fr auto auto;
+      grid-template-rows: auto auto 1fr auto;
       gap: 12px;
       padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
     }
@@ -116,66 +114,6 @@
       color: white;
       border: 1px solid rgba(255,255,255,0.18);
       backdrop-filter: blur(14px);
-    }
-
-    .called-panel {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      padding: 12px;
-      backdrop-filter: blur(14px);
-    }
-
-    .called-top {
-      display: grid;
-      grid-template-columns: 1fr auto auto;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .called-input {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.12);
-      color: white;
-      border-radius: 14px;
-      padding: 12px 14px;
-      font-size: 15px;
-      outline: none;
-    }
-
-    .called-input::placeholder {
-      color: rgba(255,255,255,0.62);
-    }
-
-    .mini-btn {
-      padding: 12px 14px;
-      border-radius: 14px;
-      font-size: 14px;
-      font-weight: 700;
-      min-width: 84px;
-    }
-
-    .chips-wrap {
-      margin-top: 10px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      max-height: 92px;
-      overflow: auto;
-      padding-right: 2px;
-    }
-
-    .chip {
-      padding: 7px 10px;
-      border-radius: 999px;
-      background: var(--chip);
-      border: 1px solid var(--chip-border);
-      color: white;
-      font-size: 13px;
-      font-weight: 700;
-      white-space: nowrap;
     }
 
     .card-wrap {
@@ -348,10 +286,6 @@
       .grid {
         padding-top: 0;
       }
-
-      .called-top {
-        grid-template-columns: 1fr 120px 120px;
-      }
     }
   </style>
 </head>
@@ -372,15 +306,6 @@
     <div class="controls">
       <button class="primary" id="newCardBtn">สุ่มการ์ดใหม่</button>
       <button class="secondary" id="resetBtn">ล้างเครื่องหมาย</button>
-    </div>
-
-    <div class="called-panel">
-      <div class="called-top">
-        <input id="calledInput" class="called-input" type="text" placeholder="ใส่เลขที่ออก เช่น B12 หรือ 12">
-        <button class="primary mini-btn" id="addCalledBtn">เพิ่มเลข</button>
-        <button class="secondary mini-btn" id="clearCalledBtn">ล้างรายการ</button>
-      </div>
-      <div class="chips-wrap" id="calledList"></div>
     </div>
 
     <div class="card-wrap">
@@ -419,8 +344,6 @@
     const statusText = document.getElementById('statusText');
     const winBanner = document.getElementById('winBanner');
     const winText = document.getElementById('winText');
-    const calledInput = document.getElementById('calledInput');
-    const calledList = document.getElementById('calledList');
 
     const ranges = [
       [1, 15],
@@ -431,7 +354,6 @@
     ];
 
     let cells = [];
-    let calledNumbers = [];
 
     function sampleRange(min, max, count) {
       const nums = [];
@@ -551,75 +473,10 @@
       return null;
     }
 
-    function normalizeCalledValue(value) {
-      if (!value) return null;
-      let text = value.toString().trim().toUpperCase();
-
-      // รองรับ B12 / B-12 / 12
-      text = text.replace(/\s+/g, '');
-      const match = text.match(/^([BINGO])?-?(\d{1,2})$/);
-
-      if (!match) return null;
-
-      const num = parseInt(match[2], 10);
-      if (num < 1 || num > 75) return null;
-
-      let prefix = '';
-      if (num >= 1 && num <= 15) prefix = 'B';
-      else if (num >= 16 && num <= 30) prefix = 'I';
-      else if (num >= 31 && num <= 45) prefix = 'N';
-      else if (num >= 46 && num <= 60) prefix = 'G';
-      else if (num >= 61 && num <= 75) prefix = 'O';
-
-      return `${prefix}${num}`;
-    }
-
-    function renderCalledList() {
-      calledList.innerHTML = '';
-      calledNumbers.forEach(item => {
-        const chip = document.createElement('div');
-        chip.className = 'chip';
-        chip.textContent = item;
-        calledList.appendChild(chip);
-      });
-    }
-
-    function addCalledNumber() {
-      const normalized = normalizeCalledValue(calledInput.value);
-      if (!normalized) {
-        statusText.textContent = 'รูปแบบเลขไม่ถูกต้อง';
-        return;
-      }
-
-      if (!calledNumbers.includes(normalized)) {
-        calledNumbers.push(normalized);
-        renderCalledList();
-        statusText.textContent = `เพิ่มเลข ${normalized} แล้ว`;
-      } else {
-        statusText.textContent = `${normalized} มีอยู่แล้ว`;
-      }
-
-      calledInput.value = '';
-      calledInput.focus();
-    }
-
-    function clearCalledNumbers() {
-      calledNumbers = [];
-      renderCalledList();
-      statusText.textContent = 'ล้างรายการเลขที่ออกแล้ว';
-    }
-
     document.getElementById('newCardBtn').addEventListener('click', buildCard);
     document.getElementById('resetBtn').addEventListener('click', resetMarks);
     document.getElementById('closeWinBtn').addEventListener('click', () => {
       winBanner.style.display = 'none';
-    });
-
-    document.getElementById('addCalledBtn').addEventListener('click', addCalledNumber);
-    document.getElementById('clearCalledBtn').addEventListener('click', clearCalledNumbers);
-
-    calledInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') addCalledNumber();
     });
 
     buildCard();
