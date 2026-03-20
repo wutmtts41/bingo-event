@@ -13,18 +13,19 @@
       --text: #f8fafc;
       --muted: #cbd5e1;
       --accent: #fbbf24;
-      --accent-2: #38bdf8;
       --cell: rgba(255,255,255,0.94);
       --cell-text: #0f172a;
+      --marked: linear-gradient(135deg, #f59e0b, #ef4444);
       --free: linear-gradient(135deg, #22c55e, #16a34a);
       --shadow: 0 18px 40px rgba(0,0,0,0.28);
       --radius: 22px;
-      --marker: rgba(220, 38, 38, 0.92);
-      --marker-soft: rgba(239, 68, 68, 0.22);
+      --chip: rgba(255,255,255,0.14);
+      --chip-border: rgba(255,255,255,0.18);
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body { height: 100%; margin: 0; }
+
     body {
       font-family: "Segoe UI", Tahoma, sans-serif;
       color: var(--text);
@@ -38,7 +39,7 @@
     .app {
       min-height: 100dvh;
       display: grid;
-      grid-template-rows: auto auto 1fr auto;
+      grid-template-rows: auto auto 1fr auto auto;
       gap: 12px;
       padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
     }
@@ -117,6 +118,66 @@
       backdrop-filter: blur(14px);
     }
 
+    .called-panel {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+      backdrop-filter: blur(14px);
+    }
+
+    .called-top {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .called-input {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.12);
+      color: white;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .called-input::placeholder {
+      color: rgba(255,255,255,0.62);
+    }
+
+    .mini-btn {
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      min-width: 84px;
+    }
+
+    .chips-wrap {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 92px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .chip {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--chip);
+      border: 1px solid var(--chip-border);
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
     .card-wrap {
       min-height: 0;
       display: flex;
@@ -164,7 +225,6 @@
 
     .cell {
       position: relative;
-      overflow: hidden;
       border: 0;
       border-radius: 18px;
       background: var(--cell);
@@ -176,13 +236,22 @@
       justify-content: center;
       min-height: 0;
       user-select: none;
-      transition: transform .14s ease, box-shadow .14s ease, opacity .14s ease;
+      transition: transform .14s ease, box-shadow .14s ease, opacity .14s ease, background .18s ease, color .18s ease;
       box-shadow: inset 0 -4px 0 rgba(15,23,42,0.08);
-      isolation: isolate;
     }
 
     .cell:active {
       transform: scale(.97);
+    }
+
+    .cell.marked {
+      color: white;
+      background: var(--marked);
+      box-shadow:
+        0 10px 20px rgba(239,68,68,.3),
+        inset 0 0 0 2px rgba(255,255,255,.18);
+      transform: scale(0.97);
+      animation: pop 0.2s ease;
     }
 
     .cell.free {
@@ -192,84 +261,10 @@
       letter-spacing: 1px;
     }
 
-    /* เส้นปากกาเมจิกขีดทับ */
-    .cell.marked::before,
-    .cell.marked::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 86%;
-      height: 7px;
-      border-radius: 999px;
-      background:
-        linear-gradient(
-          90deg,
-          rgba(185, 28, 28, 0.86) 0%,
-          rgba(220, 38, 38, 0.96) 18%,
-          rgba(239, 68, 68, 0.98) 52%,
-          rgba(220, 38, 38, 0.95) 78%,
-          rgba(185, 28, 28, 0.88) 100%
-        );
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,0.05),
-        0 1px 0 rgba(127, 29, 29, 0.2),
-        0 0 10px var(--marker-soft);
-      opacity: 0.96;
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    .cell.marked::before {
-      transform: translate(-50%, -50%) rotate(43deg);
-    }
-
-    .cell.marked::after {
-      transform: translate(-50%, -50%) rotate(-41deg);
-      width: 82%;
-      height: 6px;
-      opacity: 0.92;
-    }
-
-    /* เพิ่มความรู้สึกเหมือนปากกาขีดจริง */
-    .cell.marked .marker-scribble-1,
-    .cell.marked .marker-scribble-2 {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 3;
-    }
-
-    .cell.marked .marker-scribble-1::before,
-    .cell.marked .marker-scribble-2::before {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 78%;
-      height: 3px;
-      border-radius: 999px;
-      background: rgba(127, 29, 29, 0.42);
-      box-shadow: 0 0 4px rgba(127, 29, 29, 0.18);
-    }
-
-    .cell.marked .marker-scribble-1::before {
-      transform: translate(-50%, -50%) rotate(46deg) translateY(-4px);
-    }
-
-    .cell.marked .marker-scribble-2::before {
-      transform: translate(-50%, -50%) rotate(-38deg) translateY(4px);
-    }
-
-    /* FREE ไม่ให้มีเครื่องหมายกากบาททับ */
-    .cell.free.marked::before,
-    .cell.free.marked::after {
-      display: none;
-    }
-
-    .cell.free.marked .marker-scribble-1,
-    .cell.free.marked .marker-scribble-2 {
-      display: none;
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.9); }
+      100% { transform: scale(0.97); }
     }
 
     .footer {
@@ -353,6 +348,10 @@
       .grid {
         padding-top: 0;
       }
+
+      .called-top {
+        grid-template-columns: 1fr 120px 120px;
+      }
     }
   </style>
 </head>
@@ -373,6 +372,15 @@
     <div class="controls">
       <button class="primary" id="newCardBtn">สุ่มการ์ดใหม่</button>
       <button class="secondary" id="resetBtn">ล้างเครื่องหมาย</button>
+    </div>
+
+    <div class="called-panel">
+      <div class="called-top">
+        <input id="calledInput" class="called-input" type="text" placeholder="ใส่เลขที่ออก เช่น B12 หรือ 12">
+        <button class="primary mini-btn" id="addCalledBtn">เพิ่มเลข</button>
+        <button class="secondary mini-btn" id="clearCalledBtn">ล้างรายการ</button>
+      </div>
+      <div class="chips-wrap" id="calledList"></div>
     </div>
 
     <div class="card-wrap">
@@ -411,6 +419,8 @@
     const statusText = document.getElementById('statusText');
     const winBanner = document.getElementById('winBanner');
     const winText = document.getElementById('winText');
+    const calledInput = document.getElementById('calledInput');
+    const calledList = document.getElementById('calledList');
 
     const ranges = [
       [1, 15],
@@ -421,6 +431,7 @@
     ];
 
     let cells = [];
+    let calledNumbers = [];
 
     function sampleRange(min, max, count) {
       const nums = [];
@@ -449,18 +460,12 @@
             btn.textContent = 'FREE';
             btn.classList.add('free', 'marked');
             btn.dataset.marked = 'true';
+            btn.dataset.value = 'FREE';
           } else {
             btn.textContent = cols[col][row];
             btn.dataset.marked = 'false';
+            btn.dataset.value = cols[col][row];
           }
-
-          // ชั้นเส้นปากกาเสริม
-          const scribble1 = document.createElement('span');
-          scribble1.className = 'marker-scribble-1';
-          const scribble2 = document.createElement('span');
-          scribble2.className = 'marker-scribble-2';
-          btn.appendChild(scribble1);
-          btn.appendChild(scribble2);
 
           btn.addEventListener('click', () => toggleCell(btn));
           grid.appendChild(btn);
@@ -546,10 +551,75 @@
       return null;
     }
 
+    function normalizeCalledValue(value) {
+      if (!value) return null;
+      let text = value.toString().trim().toUpperCase();
+
+      // รองรับ B12 / B-12 / 12
+      text = text.replace(/\s+/g, '');
+      const match = text.match(/^([BINGO])?-?(\d{1,2})$/);
+
+      if (!match) return null;
+
+      const num = parseInt(match[2], 10);
+      if (num < 1 || num > 75) return null;
+
+      let prefix = '';
+      if (num >= 1 && num <= 15) prefix = 'B';
+      else if (num >= 16 && num <= 30) prefix = 'I';
+      else if (num >= 31 && num <= 45) prefix = 'N';
+      else if (num >= 46 && num <= 60) prefix = 'G';
+      else if (num >= 61 && num <= 75) prefix = 'O';
+
+      return `${prefix}${num}`;
+    }
+
+    function renderCalledList() {
+      calledList.innerHTML = '';
+      calledNumbers.forEach(item => {
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.textContent = item;
+        calledList.appendChild(chip);
+      });
+    }
+
+    function addCalledNumber() {
+      const normalized = normalizeCalledValue(calledInput.value);
+      if (!normalized) {
+        statusText.textContent = 'รูปแบบเลขไม่ถูกต้อง';
+        return;
+      }
+
+      if (!calledNumbers.includes(normalized)) {
+        calledNumbers.push(normalized);
+        renderCalledList();
+        statusText.textContent = `เพิ่มเลข ${normalized} แล้ว`;
+      } else {
+        statusText.textContent = `${normalized} มีอยู่แล้ว`;
+      }
+
+      calledInput.value = '';
+      calledInput.focus();
+    }
+
+    function clearCalledNumbers() {
+      calledNumbers = [];
+      renderCalledList();
+      statusText.textContent = 'ล้างรายการเลขที่ออกแล้ว';
+    }
+
     document.getElementById('newCardBtn').addEventListener('click', buildCard);
     document.getElementById('resetBtn').addEventListener('click', resetMarks);
     document.getElementById('closeWinBtn').addEventListener('click', () => {
       winBanner.style.display = 'none';
+    });
+
+    document.getElementById('addCalledBtn').addEventListener('click', addCalledNumber);
+    document.getElementById('clearCalledBtn').addEventListener('click', clearCalledNumbers);
+
+    calledInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addCalledNumber();
     });
 
     buildCard();
