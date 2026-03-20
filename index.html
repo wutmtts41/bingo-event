@@ -190,6 +190,7 @@
       color: var(--muted);
       font-size: 12px;
       padding: 0 4px;
+      flex-wrap: wrap;
     }
 
     .legend {
@@ -281,7 +282,7 @@
   <div class="win-banner" id="winBanner">
     <div class="win-box">
       <h2>🎉 BINGO</h2>
-      <p>คุณได้ครบ 1 แนวแล้ว ตรวจสอบกับผู้ควบคุมเกมได้เลย</p>
+      <p id="winText">คุณได้ครบ 1 แนวแล้ว ตรวจสอบกับผู้ควบคุมเกมได้เลย</p>
       <button class="primary" id="closeWinBtn">ปิดหน้าต่าง</button>
     </div>
   </div>
@@ -291,6 +292,7 @@
     const markCount = document.getElementById('markCount');
     const statusText = document.getElementById('statusText');
     const winBanner = document.getElementById('winBanner');
+    const winText = document.getElementById('winText');
 
     const ranges = [
       [1, 15],
@@ -348,9 +350,12 @@
       btn.dataset.marked = isMarked ? 'false' : 'true';
       btn.classList.toggle('marked', !isMarked);
       updateCounters();
-      if (checkBingo()) {
+
+      const bingoType = checkBingo();
+      if (bingoType) {
+        winText.textContent = `คุณได้ Bingo แบบ ${bingoType} แล้ว ตรวจสอบกับผู้ควบคุมเกมได้เลย`;
         winBanner.style.display = 'flex';
-        statusText.textContent = 'พบ Bingo แล้ว';
+        statusText.textContent = `พบ Bingo แบบ ${bingoType}`;
       }
     }
 
@@ -375,14 +380,36 @@
 
     function checkBingo() {
       for (let r = 0; r < 5; r++) {
-        if ([0,1,2,3,4].every(c => markedAt(r, c))) return true;
+        if ([0,1,2,3,4].every(c => markedAt(r, c))) return `แนวนอน แถวที่ ${r + 1}`;
       }
+
       for (let c = 0; c < 5; c++) {
-        if ([0,1,2,3,4].every(r => markedAt(r, c))) return true;
+        if ([0,1,2,3,4].every(r => markedAt(r, c))) return `แนวตั้ง คอลัมน์ ${['B','I','N','G','O'][c]}`;
       }
-      if ([0,1,2,3,4].every(i => markedAt(i, i))) return true;
-      if ([0,1,2,3,4].every(i => markedAt(i, 4 - i))) return true;
-      return false;
+
+      if ([0,1,2,3,4].every(i => markedAt(i, i))) {
+        return 'แนวทแยง ซ้ายบนไปขวาล่าง';
+      }
+
+      if ([0,1,2,3,4].every(i => markedAt(i, 4 - i))) {
+        return 'แนวทแยง ขวาบนไปซ้ายล่าง';
+      }
+
+      const outerCorners = [
+        [0,0], [0,4], [4,0], [4,4]
+      ];
+      if (outerCorners.every(([r,c]) => markedAt(r,c))) {
+        return 'สี่มุมนอก';
+      }
+
+      const innerCorners = [
+        [1,1], [1,3], [3,1], [3,3]
+      ];
+      if (innerCorners.every(([r,c]) => markedAt(r,c))) {
+        return 'สี่มุมใน';
+      }
+
+      return null;
     }
 
     document.getElementById('newCardBtn').addEventListener('click', buildCard);
